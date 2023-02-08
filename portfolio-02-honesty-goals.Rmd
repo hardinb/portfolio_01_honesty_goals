@@ -1,0 +1,82 @@
+---
+title: "portfolio-02"
+author: "Ben Hardin"
+date: "2023-02-07"
+output: 
+  html_document: 
+    highlight: tango
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r load tidyverse-dataset}
+library(tidyverse)
+
+goals <- read.csv("data/TransposedGoals.csv")
+```
+
+### blah blah
+
+```{r scatter, fig.height = 4, fig.width = 4}
+ggplot(data = goals, aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood))+
+  geom_point()+
+  theme_bw()+
+  labs(title = "Scatterplot of Goal Expectancies",
+       x = "Likelihood that dishonesty would achieve goal",
+       y = "Likelihood that honesty would achieve goal")
+ggsave("goals_scatter.png", plot = last_plot(), device = "png")
+
+goals %>%
+  summarize(r = cor(Avg_DisLikelihood, Avg_HonLikelihood))
+```
+
+### blah blah the 2nd
+```{r dist stuff}
+ggplot(goals, aes(x = Diff_Likelihood))+
+  geom_histogram(fill = "grey", color = "black")+
+  theme_bw()
+```
+
+```{r desc}
+goals %>%
+  summary
+```
+
+### blah blah the 3rd
+```{r stuff}
+polar_goals <- goals %>%
+  filter(Diff_Likelihood >= 2.1 | Diff_Likelihood <= -1.4,
+         Avg_HonLikelihood >= 3.0 | Avg_HonLikelihood <= 2.4,
+         Avg_DisLikelihood >= 3.2 | Avg_DisLikelihood <= 2.00)
+
+ggplot(data = polar_goals, aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood))+
+  geom_point(position = "jitter")+
+  theme_bw()
+```
+
+```{r again}
+polar_goals <- polar_goals %>%
+  mutate(likelihood = if_else(Avg_HonLikelihood > 3.99, "Honesty", "Dishonesty"))
+```
+
+```{r groub}
+polar_goals %>%
+  group_by(likelihood) %>%
+  count()
+```
+
+```{r tibble}
+polar_goals %>%
+  filter(likelihood == "Honesty") %>%
+  arrange(desc(Diff_Likelihood)) %>%
+  arrange(desc(Avg_HonLikelihood))
+
+polar_goals %>%
+  filter(likelihood == "Dishonesty") %>%
+  arrange(Diff_Likelihood) %>%
+    arrange(desc(Avg_DisLikelihood))
+```
