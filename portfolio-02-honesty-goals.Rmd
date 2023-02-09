@@ -13,8 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r load tidyverse-dataset}
+```{r load tidyverse-plotly-dataset}
 library(tidyverse)
+library(plotly)
 
 goals <- read.csv("data/TransposedGoals.csv")
 ```
@@ -79,4 +80,35 @@ polar_goals %>%
   filter(likelihood == "Dishonesty") %>%
   arrange(Diff_Likelihood) %>%
     arrange(desc(Avg_DisLikelihood))
+```
+
+### Trying to make a fancy plot
+
+So, first my goal is the make an interactive version of our scatterplot from earlier, that tells you the name of each goal when you hover over it. I also want to use color to more clearly emphasize the size of the difference between honesty and dishonesty scores for each goal.
+
+1. [figuring out how to add layer]
+2. [making an absolute value version of the diff score]
+
+```{r interactive-scatter}
+#absolute value differences
+goals <- goals %>%
+  mutate(abs_diff = abs(Diff_Likelihood))
+  
+goals_interactive <- goals %>%
+  ggplot(aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood, label = CASE_LBL))+
+  geom_point(aes(color = abs_diff), position = "jitter")+
+  theme_bw()
+
+ggplotly(tooltip = c("label"))
+```
+
+[Should we make the goals have full names? Is that too much trouble?]
+
+### Trying another one
+
+What I would like to do now is select a few exemplar goals, which seem to (a) tap into most of the important themes/contents of goals and (b) represent a goals from the range of honesty vs. dishonesty
+
+```{r selecting-exemplars}
+goals %>%
+  arrange(Diff_Likelihood)
 ```
