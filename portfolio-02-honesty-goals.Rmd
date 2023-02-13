@@ -88,6 +88,8 @@ So, first my goal is the make an interactive version of our scatterplot from ear
 
 Using the plotly package, I was able to make an interactive plot. To make it show the actual name of each goal, I had to specify a new aesthetic "label" for the tooltip to use. To get the points to have the gradient effect I wanted, I also had to create an absolute value version of the difference scores, so that goals that are more "polar" will be lighter than more ambivalent goals, regardless of whether they are pulling for the honest or the dishonest pole.
 
+I also wanted the labels to be as helpful as possible, by having the actual name of the goals as they were presented to raters. Unfortunately, this required me to create a new variable, labeling each goal by hand.
+
 ```{r interactive-scatter}
 #absolute value differences
 goals <- goals %>%
@@ -101,7 +103,178 @@ goals_interactive <- goals %>%
 ggplotly(tooltip = c("label"))
 ```
 
-I'm so excited about this plot! The only problem with it is that it is using names from the csv file, which are not consistently helpful for telling us what each goal actually represents.  
+I'm so excited about this plot! The only problem with it is that it is using names from the csv file, which are not consistently helpful for telling us what each goal actually represents. I want the labels to be as helpful as possible, by having the actual name of the goals as they were presented to raters. Unfortunately, this required me to create a new variable, labeling each goal by hand.
+
+```{r names}
+goals <- goals %>%
+  mutate(goal_name = case_when(
+    CASE_LBL == "Hon_AcknFault" ~ "Acknowledge fault",
+    CASE_LBL == "Hon_RightThing" ~ "Know that I did the right thing",
+    CASE_LBL == "Hon_Consequences" ~ "Test the consequences",
+    CASE_LBL == "Hon_GetWant" ~ "Get what I want",
+    CASE_LBL == "Hon_AvProb" ~ "Avoid making a problem worse",
+    CASE_LBL == "Hon_VoidCov" ~ "Avoid the coverup",
+    CASE_LBL == "Hon_RecogProb" ~ "Recognize my own problems",
+    CASE_LBL == "Hon_ExpFeelings" ~ "Express my feelings",
+    CASE_LBL == "Hon_ShowHonesty" ~ "Show that I am an honest person",
+    CASE_LBL == "Hon_ShowFairness" ~ "Show that I am fair and balanced",
+    CASE_LBL == "Hon_ProtEmb" ~ "Protect a friend from embarassment",
+    CASE_LBL == "Hon_NeedToKnow" ~ "Tell someone something they need to know",
+    CASE_LBL == "Hon_ProtFeelings" ~ "Protect someone's feelings",
+    CASE_LBL == "Hon_BeKind" ~ "Be kind",
+    CASE_LBL == "Hon_KeepFromEmb" ~ "Keep someone from embarassing themselves",
+    CASE_LBL == "Hon_GoodEx" ~ "Set a good example for others",
+    CASE_LBL == "Hon_AvoidMis" ~ "Avoid a misunderstanding",
+    CASE_LBL == "Hon_FollowNorms" ~ "Follow norms",
+    CASE_LBL == "Hon_AvoidGuilt" ~ "Avoid feeling guilty",
+    CASE_LBL == "Hon_FacilConvo" ~ "Facilitate conversation",
+    CASE_LBL == "Hon_FacilPlan" ~ "Facilitate people's planning",
+    CASE_LBL == "Hon_GainTrust" ~ "Gain trust",
+    CASE_LBL == "Hon_BeBestSelf" ~ "Be my best self",
+    CASE_LBL == "Hon_AvoidLiar" ~ "Avoid being a liar",
+    CASE_LBL == "Hon_DisapParents" ~ "Avoid disappointing my parents",
+    CASE_LBL == "Hon_HurtOther" ~ "Hurt someone",
+    CASE_LBL == "Hon_ImpInfo" ~ "Convey important information",
+    CASE_LBL == "Hon_Chest" ~ "Get something off my chest",
+    CASE_LBL == "Hon_AvoidDisap" ~ "Avoid disapproval",
+    CASE_LBL == "Hon_AvBreakTrust" ~ "Avoid breaking someone's trust",
+    CASE_LBL == "Hon_LookBetter" ~ "Look better than I really am",
+    CASE_LBL == "Hon_BeAttrac" ~ "Be more attractive",
+    CASE_LBL == "Hon_AvoidGross" ~ "Avoid the gross feeling I get from lying",
+    CASE_LBL == "Hon_AvoidPollut" ~ "Avoid polluting the relationship",
+    CASE_LBL == "Hon_KeepFirm" ~ "Keep a firm ground",
+    CASE_LBL == "Hon_BeAware" ~ "Know what is going on",
+    CASE_LBL == "Hon_AvoidViolat" ~ "Avoid a feeling of moral violation",
+    CASE_LBL == "Hon_GetHonesty" ~ "Get someone else to be honest",
+    CASE_LBL == "Hon_FacilWork" ~ "Facilitate others' work",
+    CASE_LBL == "Hon_HelpImprov" ~ "Help someone improve",
+    CASE_LBL == "Hon_ReduUncertainty" ~ "Reduce uncertainty",
+    CASE_LBL == "Hon_ImproveEffic" ~ "Improve efficiency",
+    CASE_LBL == "Hon_AvoidConf" ~ "Avoid Confusion",
+    CASE_LBL == "Hon_AvoidSusp" ~ "Avoid beeing seen as suspicious",
+    CASE_LBL == "Hon_EffecCoord" ~ "Effectively coordinate with others",
+    CASE_LBL == "Hon_GetDeserve" ~ "Get something I deserve",
+    CASE_LBL == "Hon_Self_Image" ~ "Act consistently with my self-image (as an honest person)",
+    CASE_LBL == "Hon_ShareMyself" ~ "Share myself with others",
+    CASE_LBL == "Hon_HelpGetSom" ~ "Help someone get something important to them",
+    CASE_LBL == "Hon_HelpDoBett" ~ "Help someone do better in the future",
+    CASE_LBL == "Hon_HelpSolveProb" ~ "Help someone solve a problem",
+    CASE_LBL == "Hon_FollowScript" ~ "Follow the script",
+    CASE_LBL == "Hon_AvoidWaves" ~ "Avoid making waves",
+    CASE_LBL == "Hon_PutInPlace" ~ "Put someone in their place",
+    CASE_LBL == "Hon_CorrectInaccurate" ~ "Correct an inaccurate statement",
+    CASE_LBL == "Hon_SeekHelp" ~ "Seek help or support from someone",
+    CASE_LBL == "Hon_BeHumb" ~ "Be humble",
+    CASE_LBL == "Hon_BeResp" ~ "Be respected by others",
+    CASE_LBL == "Hon_AvoidFake" ~ "Avoid seeming fake or insincere",
+    CASE_LBL == "Hon_ActNat" ~ "Act naturally",
+    CASE_LBL == "Hon_MakeWorth" ~ "Make the conversation worth having",
+    CASE_LBL == "Hon_MakeMean" ~ "Make the conversation meaningful",
+    CASE_LBL == "Hon_BeUnd" ~ "Be understood",
+    CASE_LBL == "Hon_CommClear" ~ "Communicate clearly",
+    CASE_LBL == "Hon_Deepen" ~ "Deepen my connection with someone",
+    CASE_LBL == "Hon_AvoidCaught" ~ "Avoid getting caught in a lie",
+    CASE_LBL == "Hon_TreatResp" ~ "Treat someone with respect",
+    CASE_LBL == "Hon_BeYourself" ~ "Be yourself",
+    CASE_LBL == "Hon_HelpProduc" ~ "Help someone be more productive",
+    CASE_LBL == "Hon_LongRun" ~ "Help someone in the long run",
+    CASE_LBL == "Hon_BeAuth" ~ "Be authentic",
+    CASE_LBL == "Hon_HidePers" ~ "Hide something personal",
+    CASE_LBL == "Hon_Secret" ~ "Keep a secret",
+    CASE_LBL == "Hon_Surprise" ~ "Surprise someone",
+    CASE_LBL == "Hon_EnsurSafe" ~ "Ensure my safety",
+    CASE_LBL == "Hon_NotFeelBad" ~ "Not feel bad about myself",
+    CASE_LBL == "Hon_AvoidJudg" ~ "Avoid judgement",
+    CASE_LBL == "Hon_GetWhatIWant" ~ "Get what I want",
+    CASE_LBL == "Hon_KeepPeace" ~ "Keep the peace",
+    CASE_LBL == "Hon_AvoidAwk" ~ "Avoid an awkward situation",
+    CASE_LBL == "Hon_AvoidAng" ~ "Avoid making someone angry",
+    CASE_LBL == "Hon_ChangeBeh" ~ "Change someone's behavior",
+    CASE_LBL == "Hon_BeBest" ~ "Be the best person",
+    CASE_LBL == "Hon_AvoidDisSomeone" ~ "Avoid disappointing someone",
+    CASE_LBL == "Hon_Story" ~ "Tell a good story",
+    CASE_LBL == "Hon_AvoidUncomf" ~ "Avoid making someone uncomfortable",
+    CASE_LBL == "Hon_WasteTime" ~ "Avoid wasting my time",
+    CASE_LBL == "Hon_AvoidOverre" ~ "Avoid an overreaction",
+    CASE_LBL == "Hon_AvoidHassle" ~ "Avoid dealing with the hassle",
+    CASE_LBL == "Hon_AvoidDoing" ~ "Avoid doing something you don't want to do",
+    CASE_LBL == "Hon_GetAtten" ~ "Get attention",
+    CASE_LBL == "Hon_GetSometh" ~ "Get something that I wouldn't be able to get without lying",
+    CASE_LBL == "Hon_ConfuseOthers" ~ "Confuse others",
+    CASE_LBL == "Hon_GainConfi" ~ "Help someone gain confidence",
+    CASE_LBL == "Hon_ProtPriv" ~ "Protect my privacy",
+    CASE_LBL == "Hon_AvoidSuff" ~ "Avoid others' suffering",
+    CASE_LBL == "Hon_AvoidCorrec" ~ "Avoid correction",
+    CASE_LBL == "Hon_FosterUnd" ~ "Foster understanding",
+    CASE_LBL == "Hon_DecMyself" ~ "Deceive myself",
+    CASE_LBL == "Hon_ConvMyse" ~ "Convince myself of something",
+    CASE_LBL == "Hon_FeelTrue" ~ "Feel as though something is true",
+    CASE_LBL == "Hon_AvoidArgu" ~ "Avoid an argument",
+    CASE_LBL == "Hon_StopConv" ~ "Get out of a conversation",
+    CASE_LBL == "Hon_ToLookGood" ~ "Look good to others",
+    CASE_LBL == "Hon_ControlOther" ~ "Control someone",
+    CASE_LBL == "Hon_AvoidEmb" ~ "Avoid embarassment",
+    CASE_LBL == "Hon_DrawAtten" ~ "Draw attention to what is most important",
+    CASE_LBL == "Hon_ExplMyself" ~ "Avoid having to explain myself",
+    CASE_LBL == "Hon_PresrvEng" ~ "Preserve my energy",
+    CASE_LBL == "Hon_Strategy" ~ "Allow a strategy to play out",
+    CASE_LBL == "Hon_CoverUp" ~ "Cover up a misdeed",
+    CASE_LBL == "Hon_AvoidPunish" ~ "Avoid punishment",
+    CASE_LBL == "Hon_ProtectRel" ~ "Protect my relationship with someone",
+    CASE_LBL == "Hon_PositvDir" ~ "Redirect the conversation in a more positive direction",
+    CASE_LBL == "Hon_AvoidVuln" ~ "Avoid being vulnerable",
+    CASE_LBL == "Hon_TrickSomeone" ~ "Trick someone",
+    CASE_LBL == "Hon_EntertSelf" ~ "Entertain myself",
+    CASE_LBL == "Hon_BePolite" ~ "Be polite",
+    CASE_LBL == "Hon_PleaseOther" ~ "Please someone",
+    CASE_LBL == "Hon_GentleOther" ~ "Be gentle with others",
+    CASE_LBL == "Hon_MakeFair" ~ "Make things fair",
+    CASE_LBL == "Hon_Autonomy" ~ "Assert my autonomy or independence",
+    CASE_LBL == "Hon_HurtReput" ~ "Hurt someone's reputation",
+    CASE_LBL == "Hon_KeepLieGo" ~ "Keep a previous lie going",
+    CASE_LBL == "Hon_SeemSmart" ~ "Seem knowledgable or intelligent",
+    CASE_LBL == "Hon_GetAct" ~ "Get someone to act a certain way",
+    CASE_LBL == "Hon_AvoidLose" ~ "Avoid losing something",
+    CASE_LBL == "Hon_HowToAct" ~ "Avoid not knowing how to act",
+    CASE_LBL == "Hon_AvoidBad" ~ "Avoid something bad that you expected",
+    CASE_LBL == "Hon_137" ~ "Avoid feeling shame",
+    CASE_LBL == "Hon_KeepSmooth" ~ "Keep the interaction going smoothly",
+    CASE_LBL == "Hon_MakeLike" ~ "Make someone like you",
+    CASE_LBL == "Hon_AvoidReje" ~ "Avoid rejection",
+    CASE_LBL == "Hon_GetOtherDo" ~ "Get someone to do what you needed them to do",
+    CASE_LBL == "Hon_BeSeeBett" ~ "Be seen as better than I really am",
+    CASE_LBL == "Hon_SeemFriendly" ~ "Seem friendly",
+    CASE_LBL == "Hon_GetAhead" ~ "Get ahead",
+    CASE_LBL == "Hon_AvoidAccu" ~ "Avoid being accused of wrongdoing",
+    CASE_LBL == "Hon_AvoidOther" ~ "Avoid a particular person",
+    CASE_LBL == "Hon_MakeFeelBet" ~ "Make someone feel better in the moment",
+    CASE_LBL == "Hon_ProtectWorr" ~ "Protect someone from being worried",
+    CASE_LBL == "Hon_ContinConvo" ~ "Keep the conversation going",
+    CASE_LBL == "Hon_KeepBrief" ~ "Keep the interaction brief",
+    CASE_LBL == "Hon_FeelClose" ~ "Feel close to someone",
+    CASE_LBL == "Hon_GetEven" ~ "Get even with someone",
+    CASE_LBL == "Hon_SayExpec" ~ "Say or do what was expected",
+    CASE_LBL == "Hon_ConfToRole" ~ "Conform to a role"))
+```
+
+I also took this opportunity to filter out some duplicate goals, by not giving them names. Now, let's try again.
+
+```{r interactive-scatter2}
+#absolute value differences
+goals <- goals %>%
+  mutate(abs_diff = abs(Diff_Likelihood))
+  
+goals_interactive <- goals %>%
+  filter(!is.na(goal_name)) %>%
+  ggplot(aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood, label = goal_name))+
+  geom_point(aes(color = abs_diff), position = "jitter")+
+  theme_bw()+
+  labs(title = "Scatterplot of Goal Expectancies",
+       x = "Likelihood that dishonesty would achieve goal",
+       y = "Likelihood that honesty would achieve goal")
+
+ggplotly(tooltip = c("label"))
+```
 
 ### Trying another one
 
@@ -118,7 +291,7 @@ ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Dif
          geom_point()
 ```
 
-```{r individual-diffs}
+```{r showing-variability}
 exemplar_goals <- exemplar_goals %>%
   mutate(
     R1_Dif = R1_Hon - R1_Dis,
@@ -136,4 +309,37 @@ exemplar_goals <- exemplar_goals %>%
 ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Diff_Likelihood)))+
          geom_point()+
   geom_errorbar(aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd))
+```
+
+```{r expanding-exemplars}
+strong_goals <- goals %>%
+  filter(Avg_HonLikelihood >= 4.0 | Avg_DisLikelihood >= 3.8)
+```
+
+```{r bigger-plot}
+goals <- goals %>%
+  mutate(
+    R1_Dif = R1_Hon - R1_Dis,
+    R2_Dif = R2_Hon - R2_Dis,
+    R3_Dif = R3_Hon - R3_Dis,
+    R4_Dif = R4_Hon - R4_Dis,
+    R5_Dif = R5_Hon - R5_Dis,
+    R6_Dif = R6_Hon - R6_Dis,
+    R7_Dif = R7_Hon - R7_Dis)
+
+goals <- goals %>%
+  group_by(CASE_LBL) %>%
+  mutate(sd = sd(unlist(select(cur_data(), R1_Dif:R7_Dif))))
+
+goals_sd <- goals %>%
+  filter(!is.na(goal_name)) %>%
+ggplot(aes(x = Diff_Likelihood, y = reorder(goal_name, Diff_Likelihood), label = goal_name))+
+         geom_point()+
+  geom_errorbar(aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd))+
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())+
+  theme_bw()
+
+ggplotly(goals_sd, tooltip = "label") %>%
+  layout(yaxis = list(showticklabels = FALSE))
 ```
