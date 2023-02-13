@@ -61,7 +61,7 @@ ggplot(data = polar_goals, aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood))+
 
 ```{r again}
 polar_goals <- polar_goals %>%
-  mutate(likelihood = if_else(Avg_HonLikelihood > 3.99, "Honesty", "Dishonesty"))
+  mutate(likelihood = if_else(Avg_HonLikelihood > 2.99, "Honesty", "Dishonesty"))
 ```
 
 ```{r groub}
@@ -86,8 +86,7 @@ polar_goals %>%
 
 So, first my goal is the make an interactive version of our scatterplot from earlier, that tells you the name of each goal when you hover over it. I also want to use color to more clearly emphasize the size of the difference between honesty and dishonesty scores for each goal.
 
-1. [figuring out how to add layer]
-2. [making an absolute value version of the diff score]
+Using the plotly package, I was able to make an interactive plot. To make it show the actual name of each goal, I had to specify a new aesthetic "label" for the tooltip to use. To get the points to have the gradient effect I wanted, I also had to create an absolute value version of the difference scores, so that goals that are more "polar" will be lighter than more ambivalent goals, regardless of whether they are pulling for the honest or the dishonest pole.
 
 ```{r interactive-scatter}
 #absolute value differences
@@ -102,7 +101,7 @@ goals_interactive <- goals %>%
 ggplotly(tooltip = c("label"))
 ```
 
-[Should we make the goals have full names? Is that too much trouble?]
+I'm so excited about this plot! The only problem with it is that it is using names from the csv file, which are not consistently helpful for telling us what each goal actually represents.  
 
 ### Trying another one
 
@@ -111,4 +110,30 @@ What I would like to do now is select a few exemplar goals, which seem to (a) ta
 ```{r selecting-exemplars}
 goals %>%
   arrange(Diff_Likelihood)
+
+exemplar_goals <- goals %>%
+  filter(CASE_LBL %in% c("Hon_CorrectInaccurate", "Hon_NeedToKnow", "Hon_BeYourself", "Hon_Chest", "Hon_RightThing", "Hon_AvoidMis", "Hon_TreatResp", "Hon_HelpProduc", "Hon_FeelClose", "Hon_AvoidGuilt", "Hon_PutInPlace", "Hon_WasteTime", "Hon_GainConfi", "Hon_GetOtherDo", "Hon_ToLookGood", "Hon_AvoidDisap", "Hon_Story", "Hon_GentleOther", "Hon_KeepBrief", "Hon_AvoidAwk", "Hon_CoverUp", "Hon_GetSometh"))
+
+ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Diff_Likelihood)))+
+         geom_point()
+```
+
+```{r individual-diffs}
+exemplar_goals <- exemplar_goals %>%
+  mutate(
+    R1_Dif = R1_Hon - R1_Dis,
+    R2_Dif = R2_Hon - R2_Dis,
+    R3_Dif = R3_Hon - R3_Dis,
+    R4_Dif = R4_Hon - R4_Dis,
+    R5_Dif = R5_Hon - R5_Dis,
+    R6_Dif = R6_Hon - R6_Dis,
+    R7_Dif = R7_Hon - R7_Dis)
+
+exemplar_goals <- exemplar_goals %>%
+  group_by(CASE_LBL) %>%
+  mutate(sd = sd(unlist(select(cur_data(), R1_Dif:R7_Dif))))
+
+ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Diff_Likelihood)))+
+         geom_point()+
+  geom_errorbar(aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd))
 ```
