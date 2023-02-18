@@ -271,52 +271,15 @@ goals_interactive <- goals %>%
   theme_bw()+
   labs(title = "Scatterplot of Goal Expectancies",
        x = "Likelihood that dishonesty would achieve goal",
-       y = "Likelihood that honesty would achieve goal")
+       y = "Likelihood that honesty would achieve goal",
+       color = "Difference")
 
 ggplotly(tooltip = c("label"))
 ```
 
 ### Trying another one
 
-What I would like to do now is select a few exemplar goals, which seem to (a) tap into most of the important themes/contents of goals and (b) represent a goals from the range of honesty vs. dishonesty
-
-```{r selecting-exemplars}
-goals %>%
-  arrange(Diff_Likelihood)
-
-exemplar_goals <- goals %>%
-  filter(CASE_LBL %in% c("Hon_CorrectInaccurate", "Hon_NeedToKnow", "Hon_BeYourself", "Hon_Chest", "Hon_RightThing", "Hon_AvoidMis", "Hon_TreatResp", "Hon_HelpProduc", "Hon_FeelClose", "Hon_AvoidGuilt", "Hon_PutInPlace", "Hon_WasteTime", "Hon_GainConfi", "Hon_GetOtherDo", "Hon_ToLookGood", "Hon_AvoidDisap", "Hon_Story", "Hon_GentleOther", "Hon_KeepBrief", "Hon_AvoidAwk", "Hon_CoverUp", "Hon_GetSometh"))
-
-ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Diff_Likelihood)))+
-         geom_point()
-```
-
-```{r showing-variability}
-exemplar_goals <- exemplar_goals %>%
-  mutate(
-    R1_Dif = R1_Hon - R1_Dis,
-    R2_Dif = R2_Hon - R2_Dis,
-    R3_Dif = R3_Hon - R3_Dis,
-    R4_Dif = R4_Hon - R4_Dis,
-    R5_Dif = R5_Hon - R5_Dis,
-    R6_Dif = R6_Hon - R6_Dis,
-    R7_Dif = R7_Hon - R7_Dis)
-
-exemplar_goals <- exemplar_goals %>%
-  group_by(CASE_LBL) %>%
-  mutate(sd = sd(unlist(select(cur_data(), R1_Dif:R7_Dif))))
-
-ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Diff_Likelihood)))+
-         geom_point()+
-  geom_errorbar(aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd))
-```
-
-```{r expanding-exemplars}
-strong_goals <- goals %>%
-  filter(Avg_HonLikelihood >= 4.0 | Avg_DisLikelihood >= 3.8)
-```
-
-```{r bigger-plot}
+```{r plotting-variability}
 goals <- goals %>%
   mutate(
     R1_Dif = R1_Hon - R1_Dis,
@@ -343,3 +306,49 @@ ggplot(aes(x = Diff_Likelihood, y = reorder(goal_name, Diff_Likelihood), label =
 ggplotly(goals_sd, tooltip = "label") %>%
   layout(yaxis = list(showticklabels = FALSE))
 ```
+
+What I would like to do now is select a few exemplar goals, which seem to (a) tap into most of the important themes/contents of goals and (b) represent a goals from the range of honesty vs. dishonesty
+
+```{r selecting-exemplars}
+goals %>%
+  arrange(Diff_Likelihood)
+
+exemplar_goals <- goals %>%
+  filter(CASE_LBL %in% c("Hon_GetSometh", "Hon_BeSeeBett", "Hon_CoverUp", "Hon_AvoidVuln", "Hon_ProtFeelings", "Hon_AvoidJudg", "Hon_AvoidDoing", "Hon_AvoidReje", "Hon_ProtPriv", "Hon_StopConv", "Hon_PresrvEng", "Hon_AvoidEmb", "Hon_ConfToRole", "Hon_KeepPeace", "Hon_Story", "Hon_GetAhead", "Hon_ControlOther", "Hon_AvoidDisap", "Hon_ExplSelf", "Hon_SeemSmart", "Hon_HurtOther", "Hon_KeepSmooth", "Hon_GetWant", "Hon_ProtEmb", "Hon_BeAttrac", "Hon_PositvDir", "Hon_BeKind", "Hon_HelpGetSom", "Hon_ProtectRel", "Hon_GainConfi", "Hon_BeHumb", "Hon_WasteTime", "Hon_AvoidSusp", "Hon_BeBest", "Hon_Autonomy", "Hon_PutInPlace", "Hon_AvoidGuilt", "Hon_RecogProb", "Hon_SeekHelp", "Hon_FeelClose", "Hon_MakeMean", "Hon_HelpImprov", "Hon_AvoidCaught", "Hon_GainTrust", "Hon_TreatResp", "Hon_AvoidMis", "Hon_ShareMyself", "Hon_RightThing", "Hon_Chest", "Hon_AvoidFake", "Hon_Self_Image", "Hon_BeAuth", "Hon_NeedToKnow", "Hon_CorrectInaccurate"))
+
+ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Diff_Likelihood)))+
+         geom_point()
+```
+
+```{r plotting-exemplars, fig.height = 9, fig.width = 12}
+exemplar_goals <- exemplar_goals %>%
+  mutate(
+    R1_Dif = R1_Hon - R1_Dis,
+    R2_Dif = R2_Hon - R2_Dis,
+    R3_Dif = R3_Hon - R3_Dis,
+    R4_Dif = R4_Hon - R4_Dis,
+    R5_Dif = R5_Hon - R5_Dis,
+    R6_Dif = R6_Hon - R6_Dis,
+    R7_Dif = R7_Hon - R7_Dis)
+
+exemplar_goals <- exemplar_goals %>%
+  group_by(CASE_LBL) %>%
+  mutate(sd = sd(unlist(select(cur_data(), R1_Dif:R7_Dif))))
+
+goals_ex_sd <- exemplar_goals %>%
+ggplot(aes(x = Diff_Likelihood, y = reorder(goal_name, Diff_Likelihood), label = goal_name))+
+         geom_point()+
+  geom_errorbar(aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd))+
+  scale_x_continuous(
+    limits = c(-4, 4))+
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())+
+  theme_bw()+
+  labs(title = "Inter-rater variability in goal expectancies",
+       y = element_blank(),
+       x = "Difference between honesty and dishonesty expectancies")
+
+ggplotly(tooltip = "label") %>%
+  layout(yaxis = list(showticklabels = FALSE))
+```
+
