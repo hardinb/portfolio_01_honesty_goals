@@ -5,8 +5,15 @@ date: "2023-02-07"
 output: 
   html_document: 
     highlight: tango
-    theme: readable
+    theme: journal
 ---
+### Intro
+
+Background: In a future study, we will be assessing the goals that people have when interacting with others in everyday life, and testing whether the goals people have predict how honest they are with the people they interact with. Before we can run the study, we need to decide which goals we want to assess. To do so, we generated a list of goals that we thought might be likely to predict honesty or dishonesty in everyday life. We are now rating each goal item we generated on several criteria to help us decide which goals are worth including in the study.
+
+To generate the data used in this portfolio, 7 "experts" rated the likelihood that each goal could be accomplished through both a) honesty and b) dishonesty. What we want to do is select "polar goals" that pull for one end of honesty but not the other. That is, goals that are very likely to be achieved by honesty, and not likely to be achieved by dishonesty (and vice versa).
+
+### Plotting our responses
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -20,7 +27,9 @@ library(plotly)
 goals <- read.csv("data/TransposedGoals.csv")
 ```
 
-### blah blah
+After loading the necessary packages and our dataset, the first thing that I want to do is make a scatterplot showing the relationship between the two kinds of likelihood. Each point in the plot represents a goal item, the x-axis represents the average of 7 ratings of how likely it is that dishonesty would be used to achieve a goal, and the y-axis represtents the average of 7 ratings of how likely it is that honesty would be used to achieve a goal. 
+
+What this plot nicely shows is that the expectation that honesty would be good for achieving a goal is strongly negatively related to the expectation that dishonesty would be good for achieving a goal (r = -.84). It also shows that there are a lot of goals for which neither honesty nor dishonesty is expected to be particularly useful. What we want to do now is to filter out all these mediocre goals, so that we only have the "polar goals" we want, which in this case are the goals in the upper left and lower right quadrants of the plot. 
 
 ```{r scatter, fig.height = 4, fig.width = 4}
 ggplot(data = goals, aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood))+
@@ -35,19 +44,32 @@ goals %>%
   summarize(r = cor(Avg_DisLikelihood, Avg_HonLikelihood))
 ```
 
-### blah blah the 2nd
-```{r dist stuff}
+### Identifying polar goals
+
+What I want to do now is use some of the qualities of our data to help me decide what cutoffs I should use to filter for only polar goals. The first thing I've done is to display the distribution of difference scores representing the difference between goal expectancies for honesty and dishonesty. The histogram shows a bimodal-ish distribution, which shows that a there are a lot of goals with difference scores of around -1.75 as well as a lot with difference scores around +2.5. 
+
+```{r dist-diff}
 ggplot(goals, aes(x = Diff_Likelihood))+
   geom_histogram(fill = "grey", color = "black")+
   theme_bw()
 ```
+
+Second, I'd like to get a more basic summary of the characteristics of how difference scores, as well as main average likelihood scores are distributed across goals. Looking at difference scores, we can see that the lower and upper quartile are -1.4 and +2.1 respectively, which is also quite close to the humps that we just saw in the histogram of difference scores. We can also see the quartiles and medians for the average honesty and dishonesty ratings, which help us get a sense of how the "strength" of our goals is distributed.
 
 ```{r desc}
 goals %>%
   summary
 ```
 
-### blah blah the 3rd
+### Filtering for polar goals
+
+Now I'd like to use the information we just learned from our data to create a filtered dataset that contains only polar goals. I've done so using 3 criteria.
+1. A difference score in either the top or bottom 25% of difference scores
+2. An average honesty rating that is greater than the median rating for honesty or within the bottom 25% of ratings for honesty
+3. An average dishonesty rating that is greater than the median rating for honesty or within the bottom 25% of ratings for dishonesty
+
+A new scatterplot shows that we have successfully filtered out the ambivalent goals that scored around the midpoint for our goals.
+
 ```{r stuff}
 polar_goals <- goals %>%
   filter(Diff_Likelihood >= 2.1 | Diff_Likelihood <= -1.4,
@@ -59,7 +81,9 @@ ggplot(data = polar_goals, aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood))+
   theme_bw()
 ```
 
-```{r again}
+What I'd now like to do is get a list of the goals that are left after filtering, and see how many we have left pulling for honesty and dishonesty. After filtering, we are left with 28 polar goals pulling for dishonesty, and 36 polar goals pulling for honesty.
+
+```{r categories}
 polar_goals <- polar_goals %>%
   mutate(likelihood = if_else(Avg_HonLikelihood > 2.99, "Honesty", "Dishonesty"))
 ```
@@ -70,7 +94,7 @@ polar_goals %>%
   count()
 ```
 
-```{r tibble}
+```{r tibble, paged.print=TRUE}
 polar_goals %>%
   filter(likelihood == "Honesty") %>%
   arrange(desc(Diff_Likelihood)) %>%
@@ -83,6 +107,8 @@ polar_goals %>%
 ```
 
 ### Trying to make a fancy plot
+
+Now that I've taken care of the basics, I'd like to try out some fancy ways of displaying more information about these data.
 
 So, first my goal is the make an interactive version of our scatterplot from earlier, that tells you the name of each goal when you hover over it. I also want to use color to more clearly emphasize the size of the difference between honesty and dishonesty scores for each goal.
 
@@ -260,10 +286,6 @@ goals <- goals %>%
 I also took this opportunity to filter out some duplicate goals, by not giving them names. Now, let's try again.
 
 ```{r interactive-scatter2}
-#absolute value differences
-goals <- goals %>%
-  mutate(abs_diff = abs(Diff_Likelihood))
-  
 goals_interactive <- goals %>%
   filter(!is.na(goal_name)) %>%
   ggplot(aes(x = Avg_DisLikelihood, y = Avg_HonLikelihood, label = goal_name))+
@@ -277,7 +299,13 @@ goals_interactive <- goals %>%
 ggplotly(tooltip = c("label"))
 ```
 
-### Trying another one
+Hurray! That worked beautifully I think. Now you can pick out any goal you like from the scatterplot, and instantly figure out which goal it is, and easily get a good sense of how much we expected that goal to be achievably via honesty and/or dishonesty.
+
+### Trying another cool plot
+
+For my last experiment, I'd like to try making one more plot which displays not only difference between average likelihood ratings for honesty and dishonesty for each goal, but also gives us a sense of how much variability there was between our 7 raters in their likelihood ratings for each goal.
+
+To start, I calculated difference scores separately for each rater, and then calculated a standard deviation of difference scores across raters for each goal. Then, I made a chart showing the average difference for likelihood ratings for each goal, with error bars showing the SD for difference scores.
 
 ```{r plotting-variability}
 goals <- goals %>%
@@ -307,7 +335,9 @@ ggplotly(goals_sd, tooltip = "label") %>%
   layout(yaxis = list(showticklabels = FALSE))
 ```
 
-What I would like to do now is select a few exemplar goals, which seem to (a) tap into most of the important themes/contents of goals and (b) represent a goals from the range of honesty vs. dishonesty
+The main thing we can see here is that there are a lot of goals, and quite a bit of variability in terms of how much different raters expected goals to be achieved by honesty or dishonesty. However, the plot is too all-encompassing and overwhelming to offer any useful information about any given goal in particular. 
+
+What I would like to do now is select a few exemplar goals, which seem to (a) tap into most of the important themes/contents of goals and (b) represent goals from the range of honesty vs. dishonesty
 
 ```{r selecting-exemplars}
 goals %>%
@@ -320,7 +350,11 @@ ggplot(data = exemplar_goals, aes(x = Diff_Likelihood, y = reorder(CASE_LBL, Dif
          geom_point()
 ```
 
-```{r plotting-exemplars, fig.height = 9, fig.width = 12}
+These goals do a pretty nice job of covering a bredth of content as well as the full range of difference scores. Now, let's make them into a helpful and readable plot.
+
+Like before, I've made this plot interactive, so that we can select any given point and find out which goal it represents. Another nice thing about this is it allows us to streamline the graph, and not have the y axis be totally overwhelmed by labels for each goal. I decided to keep the color information from the scatterplot, which makes these two plots into nice companions, showing similar but different information about the ratings we obtained for these goals. Finally, I added a vertical line at 0, so that we can easily see for each goal whether or not the standard deviation of difference scores intersects 0.
+
+```{r plotting-exemplars, fig.height = 8, fig.width = 8}
 exemplar_goals <- exemplar_goals %>%
   mutate(
     R1_Dif = R1_Hon - R1_Dis,
@@ -336,19 +370,21 @@ exemplar_goals <- exemplar_goals %>%
   mutate(sd = sd(unlist(select(cur_data(), R1_Dif:R7_Dif))))
 
 goals_ex_sd <- exemplar_goals %>%
-ggplot(aes(x = Diff_Likelihood, y = reorder(goal_name, Diff_Likelihood), label = goal_name))+
+ggplot(aes(x = Diff_Likelihood, y = reorder(goal_name, Diff_Likelihood), color = abs_diff, label = goal_name))+
          geom_point()+
-  geom_errorbar(aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd))+
-  scale_x_continuous(
-    limits = c(-4, 4))+
+  geom_errorbar(linewidth = 0.9, aes(xmin = Diff_Likelihood - sd, xmax = Diff_Likelihood + sd, color = abs_diff))+
+  geom_vline(xintercept = 0, linetype = "dashed", linewidth = 0.5)+
+  coord_cartesian(xlim = c(-4, 4))+
+  scale_y_discrete(breaks = NULL)+
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank())+
   theme_bw()+
   labs(title = "Inter-rater variability in goal expectancies",
        y = element_blank(),
-       x = "Difference between honesty and dishonesty expectancies")
+       x = "Difference between honesty and dishonesty expectancies",
+       color = "Difference")
 
-ggplotly(tooltip = "label") %>%
-  layout(yaxis = list(showticklabels = FALSE))
+ggplotly(tooltip = "label", align = "center") %>%
+  layout(yaxis = list(showticklabels = FALSE, showgrid = FALSE))
 ```
 
